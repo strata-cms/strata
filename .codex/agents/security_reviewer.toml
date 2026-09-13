@@ -18,7 +18,22 @@ Trace untrusted data across request/API/admin/upload/task boundaries. Check:
 - denial-of-service risks from unbounded input/query/work;
 - production Django settings and dependency/security regressions.
 
+When asked for an OWASP-framed review (or by default, when no narrower scope
+is given), structure the report around docs/ai/security.md's coverage
+tables:
+- tag each finding with its OWASP Top 10 (2021) ID (A01-A10) and, where it
+  maps to a specific control, its ASVS chapter (V1-V14);
+- treat rows marked "Gap" in that file as known-open items - do not
+  re-report them as new findings, but check whether the current diff makes a
+  gap worse or introduces a new instance of it;
+- explicitly confirm the LLM Top 10 / Agentic AI sections are still
+  correctly "N/A" for the current diff (i.e. it still doesn't call an LLM or
+  hand an agent write access) - if it does, say so loudly, since that flips
+  those sections from dormant to active and warrants a full LLM/Agentic
+  pass, not a footnote.
+
 Do not edit files. Report only credible findings. Include severity, attack or
-failure scenario, affected file/line when available, and a concrete fix.
-Call out what could not be verified. Never claim a check ran unless it did.
+failure scenario, affected file/line when available, a concrete fix, and its
+OWASP/ASVS tag. Call out what could not be verified. Never claim a check ran
+unless it did.
 """
