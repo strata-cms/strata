@@ -89,30 +89,38 @@ Claude's Bash sandbox is intended for macOS, Linux, and WSL2. On Windows, run th
 ```text
 src/strata_cms/
 ├── domain/
-│   └── ...                 # plain Python entities/value objects/rules
+│   └── ...                 # plain Python entities/value objects/rules (Content, Revision, ContentRoute)
 ├── application/
-│   ├── ports/              # repositories/UoW/cache/search/event/task/etc.
-│   └── ...                 # commands, queries, use cases
+│   ├── ports/              # repositories/UoW/cache/search/authorization/event/task/etc.
+│   ├── content/             # content write use cases, Delivery read service, search indexing
+│   └── routing/             # page-tree (ContentRoute) use cases and path resolution
 ├── infrastructure/
-│   ├── persistence/django/ # Django ORM Records, mappers, repos, UoW
-│   ├── cache/              # default Django cache + optional adapters
-│   ├── clock/              # system clock adapter
-│   ├── search/
-│   ├── messaging/
-│   └── tasks/
-├── api/                    # DRF presentation adapter
+│   ├── persistence/django/ # Django ORM Records, mappers, repos, UoW, search backend, routing
+│   ├── authorization/      # shared ContentAuthorizationPolicy + Django-actor builder
+│   ├── cache/               # default Django cache adapter
+│   ├── clock/               # system clock adapter
+│   ├── tasks/                # framework-agnostic outbox worker loop
+│   ├── search/               # empty: the concrete adapter lives under persistence/django/search.py
+│   └── messaging/            # empty: no external broker adapter is wired yet
+├── api/                    # DRF presentation adapters (Delivery + Management)
 ├── admin/                  # Django Admin/Unfold presentation adapter
 ├── config/                 # settings, URLs, ASGI/WSGI, composition root
 └── py.typed
 ```
 
-The starter defines provider-neutral ports for Clock, cache, search, durable
-messages, integration events, tasks and Unit of Work, plus working Django-backed
-Clock and Cache defaults. The first persistence vertical is implemented: stable
-Content aggregates, immutable Revision snapshots, explicit record/entity
-mappers, optimistic concurrency, a Django Unit of Work, and transactional
-outbox persistence. Search delivery and queue consumption remain intentionally
-unimplemented until their actual use cases are built.
+The starter defines provider-neutral ports for Clock, cache, search,
+authorization, durable messages, integration events, tasks and Unit of Work.
+The full content vertical is implemented: stable Content aggregates,
+immutable Revision snapshots, publish/archive/restore lifecycle, a shared
+authorization policy, a page-tree (`ContentRoute`) with path resolution, a
+PostgreSQL-backed search index (SQLite `icontains` fallback for lightweight
+local/test runs) kept in sync via the outbox worker, and both a public
+Delivery API and an authenticated Management API built on the same use
+cases. `infrastructure/search/` and `infrastructure/messaging/` remain empty
+stub packages — search's concrete adapter lives alongside the other Django
+persistence adapters (`infrastructure/persistence/django/search.py`), and no
+external message-broker adapter has been built yet (the outbox/worker use
+PostgreSQL directly).
 
 Django ORM is deliberately confined to infrastructure. Domain entities are
 plain Python objects; repositories and explicit mappers bridge them to Django
@@ -129,22 +137,36 @@ The architecture contract is now defined in `docs/ai/architecture.md`. The core 
 - immutable versioned revisions with strict draft/published separation; the
   concrete model is documented in ADR 0002;
 - Page as one content capability, not the superclass for every CMS object;
+  routing is an optional attached `ContentRoute` per ADR 0006, not a field
+  every content item carries;
 - ADR 0003 compiled plugin registry: startup-only builder, dependency/version validation, deterministic ordering, immutable runtime lookup and Django system-check validation;
 - public `strata_cms.plugin_api`, typed content schemas, pure in-memory historical migrations, and current-schema normalization on new writes;
 - ADR 0004 structured blocks: revision-embedded stable UUID/type/version/data envelopes, named nested slots, independent block migrations, recursive validation/Delivery serialization, and declared cross-plugin block dependencies;
 - ADR 0005 schema-driven management editing: optional presentation-neutral editor metadata, ephemeral working documents, one Management API write path, and Unfold Admin as a client of the same use cases;
-- Delivery and Management APIs with different trust/state semantics;
-- rebuildable published projections for routing/search where needed;
-- PostgreSQL + storage as the minimal production infrastructure, with queues/search servers remaining optional;
+- a shared `ContentAuthorizationPolicy` decides every privileged action once,
+  called from the application use cases rather than duplicated per adapter;
+  publish authority (`publish_contentrecord`) is a distinct permission from
+  edit authority (`change_contentrecord`);
+- Delivery and Management APIs with different trust/state semantics, both
+  rate-limited (`ScopedRateThrottle`);
+- rebuildable published projections for routing (`RoutePathRecord`, ADR 0006)
+  and search (`SearchDocumentRecord`), kept in sync via the outbox worker;
+- PostgreSQL + storage as the minimal production infrastructure, with a
+  queue/broker beyond PostgreSQL remaining optional;
 - Data Mapper persistence: plain entities + repositories + Unit of Work over Django ORM records;
-- narrow infrastructure ports for cache/search/events/tasks/messages/storage/time;
+- narrow infrastructure ports for cache/search/authorization/events/tasks/messages/storage/time;
 - at-least-once durable messaging, idempotent handlers, and transactional outbox for reliable integration events;
-- an intended optional PostgreSQL-backed `strata_worker` default, while Celery/RabbitMQ/etc. remain replaceable adapters.
+- an opt-in PostgreSQL-backed `strata_worker` (`python manage.py strata_worker`,
+  wired into `docker-compose.yml` as its own service), while the web process
+  never requires it to start; Celery/RabbitMQ/etc. remain replaceable adapters.
 
 The detailed infrastructure contract lives in `docs/ai/infrastructure.md`. ADR
 `0001` records the Data Mapper decision, ADR `0002` records the concrete
-Content/Revision aggregate, ADR `0003` records the plugin/content registry, and
-ADR `0004` records structured block semantics and ADR `0005` records the management/editor contract. Import Linter contracts are active for the current
+Content/Revision aggregate, ADR `0003` records the plugin/content registry,
+ADR `0004` records structured block semantics, ADR `0005` records the
+management/editor contract, and ADR `0006` records content routing (the
+optional attached `ContentRoute` tree and its synchronously-rebuilt path
+projection). Import Linter contracts are active for the current
 domain/application/persistence seams. As independently distributable plugins or
 feature-private packages appear, extend those contracts rather than relying on
 convention alone. uv workspaces remain a natural future evolution if plugins
@@ -180,10 +202,14 @@ example content types become required CMS content.
 ## Management editing
 
 The authenticated Management API under `/api/v1/manage/` exposes content-type
-editor discovery, latest working revisions, revision creation and publication.
-The initial default authorization requires Django staff status plus explicit view/add/change permissions; finer object/site policy
-is a separate authorization evolution. Writes always use optimistic content
-versions and the same application use cases as other adapters.
+editor discovery, latest working revisions plus full revision history,
+revision creation, publication, archive/restore, and page-tree route
+attach/move/detach. Authorization is decided once by the shared
+`ContentAuthorizationPolicy` (Django staff status plus the specific
+permission mapped to the requested action — publish is its own permission,
+separate from edit); object/site/subtree-scoped policy beyond that remains a
+separate future evolution. Writes always use optimistic content versions and
+the same application use cases as other adapters.
 
 The Unfold Admin registers `ContentRecord` only for listing/discovery. Its Add
 and Change flows render the schema-driven generic editor rather than Django's
@@ -191,8 +217,10 @@ model form. Scalar fields come from semantic editor hints; structured blocks can
 be added, removed, reordered and nested through declared named slots. The
 working tree exists only in the browser until Save appends an immutable
 revision. Admin does not call `ModelForm.save()`/`save_model()` to mutate CMS
-state, and generic deletion is disabled until a deletion/archive use case is
-defined.
+state; Django's own record-delete UI stays disabled (hard-deleting a
+`ContentRecord` would cascade-delete its immutable revision history), but the
+changelist exposes "Archive selected"/"Restore selected" bulk actions that
+call the real `archive_content`/`restore_content` application use cases.
 
 ## CI/security
 
@@ -210,12 +238,19 @@ Publishing/deployment automation is intentionally absent until a deployment envi
 
 This starter does not fabricate `uv.lock`: resolution must happen against the real package index. Run `make bootstrap` once after unpacking, inspect the resolved versions, then commit `uv.lock`. From that point onward, `make check`, CI, Docker, and agent workflows require the committed lockfile.
 
-## Async worker evolution
+## Outbox worker
 
-Reliable publication events already enter the PostgreSQL transactional outbox
-in the same Unit of Work as the authoritative content pointer update. Consumption
-is intentionally the next separate step: the future opt-in `strata_worker` will
-claim outbox/task messages with retry/lease/dead-letter behavior. The web
-container does not require that worker to start. Celery or external brokers
-remain adapters to the public task/message contracts rather than dependencies
-in domain/application code.
+Reliable publication/archive/restore events enter the PostgreSQL
+transactional outbox in the same Unit of Work as the authoritative content
+pointer update. `python manage.py strata_worker` claims and processes them:
+`SELECT ... FOR UPDATE SKIP LOCKED` for safe multi-worker claiming,
+visibility-timeout lease recovery, exponential-backoff retry, and an explicit
+dead-letter state after `--max-attempts`. It is opt-in — the web process
+never requires it to start — but `docker-compose.yml` runs it as its own
+`worker` service by default.
+
+The default dispatcher only logs; pass
+`--dispatcher strata_cms.config.services.dispatch_content_event` to also keep
+the search index (`SearchDocumentRecord`) in sync with publish/archive/restore
+events. Celery or external brokers remain adapters to the public task/message
+contracts rather than dependencies in domain/application code.

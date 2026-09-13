@@ -84,7 +84,11 @@ warning-free. drf-spectacular annotations are part of the public contract. Inspe
 
 ## Supply-chain policy
 
-- `pip-audit` remains the stable local Python vulnerability scanner.
+- `pip-audit` remains the stable local Python vulnerability scanner. `make
+  security` runs it against an exported third-party-only requirements file
+  (`uv export --no-emit-project --no-hashes`), not the live environment
+  directly — auditing the environment directly fails `--strict` on this
+  project's own unpublished local package, which PyPI can never resolve.
 - uv's own `audit` command is not a required gate while it is a preview feature.
 - Dependabot uses the native `uv` ecosystem and also updates Actions/Docker/pre-commit references.
 - Dependency Review fails PRs that introduce moderate-or-higher known vulnerabilities.

@@ -321,11 +321,18 @@ publicly retrievable.
 ## Permissions and workflow
 
 Build on Django auth/permissions where useful but keep authorization decisions
-behind explicit policy/use-case boundaries.
+behind explicit policy/use-case boundaries. Implemented as the shared
+`ContentAuthorizationPolicy` (`infrastructure/authorization/policy.py`),
+called once from the application use cases rather than duplicated per
+presentation adapter.
 
-Separate edit and publication authority. Possible actions include
-view/add/change/delete/publish/unpublish/restore, with site/subtree/object scope
-possible later.
+Separate edit and publication authority: implemented as distinct Django
+permissions (`change_contentrecord` vs `publish_contentrecord`). Possible
+actions include view/add/change/delete/publish/unpublish/restore — view,
+create, change, publish, archive, and restore actions exist today
+(`ContentAction` in `application/ports/authorization.py`); site/subtree/object
+scope beyond staff + per-action permission remains possible later, not yet
+built.
 
 Start workflow simple: draft + published/unpublished, plus scheduled
 publish/unpublish when implemented. Do not pre-build a general BPM engine.
@@ -333,12 +340,22 @@ publish/unpublish when implemented. Do not pre-build a general BPM engine.
 ## Pages and routing
 
 Page hierarchy/routing is a page concern, not the root content abstraction.
+Implemented per ADR 0006 as an optional attached `ContentRoute`
+(`domain/route.py`), not a field every content item carries.
 
-- page moves/renames go through use cases preserving tree/path invariants;
-- use proven tree/path techniques/libraries rather than casual custom trees;
-- published routing may be an optimized projection;
+- page moves/renames go through use cases preserving tree/path invariants —
+  `attach_route`/`move_route`/`detach_route` in `application/routing/use_cases.py`;
+- use proven tree/path techniques/libraries rather than casual custom trees —
+  parent/slug tree with two partial unique DB constraints for sibling-slug
+  uniqueness (including at the root, where a plain `unique_together` would not
+  work since SQL `NULL` is never equal to `NULL`);
+- published routing may be an optimized projection — `RoutePathRecord`
+  (`path -> content_id`), resolved by the Delivery API without touching the
+  route tree itself;
 - route/publication state transitions must be transactionally/reliably
-  consistent.
+  consistent — a move/rename synchronously rebuilds the path projection for
+  the moved node and every descendant inside the same transaction as the
+  route change.
 
 ## Media
 
