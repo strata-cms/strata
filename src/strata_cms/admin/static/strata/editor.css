@@ -1,0 +1,105 @@
+.cms-type-chooser ul {
+  display: grid;
+  gap: 1rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.cms-type-chooser a {
+  display: block;
+  padding: 1rem;
+  border: 1px solid currentColor;
+  border-radius: .5rem;
+  text-decoration: none;
+}
+
+.cms-type-chooser span {
+  display: block;
+  margin-top: .25rem;
+  opacity: .75;
+}
+
+.cms-editor-toolbar,
+.cms-block-header,
+.cms-collection-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .75rem;
+}
+
+.cms-editor-toolbar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  padding: .75rem 0;
+}
+
+.cms-editor-actions,
+.cms-block-actions,
+.cms-collection-add {
+  display: flex;
+  gap: .5rem;
+}
+
+.cms-editor-field {
+  margin-bottom: 1.25rem;
+}
+
+.cms-editor-field > label,
+.cms-block-field > label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: .35rem;
+}
+
+.cms-editor-field input[type="text"],
+.cms-editor-field input[type="number"],
+.cms-editor-field input[type="date"],
+.cms-editor-field input[type="datetime-local"],
+.cms-editor-field select,
+.cms-editor-field textarea,
+.cms-block-field input[type="text"],
+.cms-block-field input[type="number"],
+.cms-block-field select,
+.cms-block-field textarea {
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.cms-block-collection {
+  display: grid;
+  gap: .75rem;
+}
+
+.cms-block {
+  border: 1px solid currentColor;
+  border-radius: .5rem;
+  padding: .75rem;
+}
+
+.cms-block-fields,
+.cms-block-slot {
+  display: grid;
+  gap: .75rem;
+  margin-top: .75rem;
+}
+
+.cms-block-slot {
+  padding-left: 1rem;
+  border-left: 2px solid currentColor;
+}
+
+.cms-help {
+  display: block;
+  margin-top: .25rem;
+  opacity: .75;
+}
+
+.cms-editor-errors {
+  margin: .75rem 0;
+  padding: .75rem;
+  border: 1px solid currentColor;
+  border-radius: .5rem;
+}

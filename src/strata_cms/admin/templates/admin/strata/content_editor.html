@@ -1,0 +1,32 @@
+{% extends "admin/base_site.html" %}
+{% load static %}
+
+{% block extrahead %}
+  {{ block.super }}
+  <link rel="stylesheet" href="{% static 'strata/editor.css' %}">
+{% endblock %}
+
+{% block content %}
+  {{ editor_schema|json_script:"cms-editor-schema" }}
+  {{ editor_document|json_script:"cms-editor-document" }}
+  {{ editor_endpoints|json_script:"cms-editor-endpoints" }}
+
+  <form id="cms-editor-csrf" hidden>{% csrf_token %}</form>
+
+  <div id="cms-editor" class="cms-editor">
+    <div class="cms-editor-toolbar">
+      <div>
+        <strong id="cms-editor-revision"></strong>
+        <span id="cms-editor-status" role="status"></span>
+      </div>
+      <div class="cms-editor-actions">
+        <button type="button" class="button" id="cms-editor-save">Save revision</button>
+        <button type="button" class="button" id="cms-editor-publish">Publish</button>
+      </div>
+    </div>
+    <div id="cms-editor-errors" class="cms-editor-errors" hidden></div>
+    <div id="cms-editor-fields"></div>
+  </div>
+
+  <script src="{% static 'strata/editor.js' %}"></script>
+{% endblock %}

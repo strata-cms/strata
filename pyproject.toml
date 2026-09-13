@@ -1,0 +1,245 @@
+[project]
+name = "strata-cms"
+version = "0.1.0"
+description = "Extensible API-first Django CMS with an Unfold admin"
+readme = "README.md"
+requires-python = ">=3.12,<3.15"
+dependencies = [
+  "Django>=5.2.17,<5.3",
+  "djangorestframework>=3.18,<3.19",
+  "django-unfold>=0.105.0,<0.106",
+  "drf-spectacular>=0.30,<0.31",
+  "django-environ>=0.12,<0.13",
+  "psycopg[binary]>=3.2,<4",
+  "gunicorn>=23,<24",
+  "whitenoise>=6.9,<7",
+  "packaging>=25,<27",
+]
+
+[dependency-groups]
+dev = [
+  "ruff>=0.16.6,<0.17",
+  "mypy>=2.3.1,<2.4",
+  "django-stubs[compatible-mypy]>=6.1,<6.2",
+  "djangorestframework-stubs>=3.18.1,<3.19",
+  "pytest>=9.1,<10",
+  "pytest-django>=4.14,<5",
+  "pytest-cov>=7.1,<8",
+  "pytest-xdist>=3.8,<4",
+  "hypothesis>=6.167,<7",
+  "pip-audit>=2.10.1,<3",
+  "pre-commit>=4.6.2,<5",
+  "import-linter>=2.15,<3",
+]
+
+[build-system]
+requires = ["uv_build>=0.12.13,<0.13"]
+build-backend = "uv_build"
+
+[tool.ruff]
+target-version = "py312"
+line-length = 88
+src = ["src", "tests"]
+extend-exclude = ["**/migrations/*.py"]
+
+[tool.ruff.lint]
+select = [
+  "E4",
+  "E7",
+  "E9",
+  "F",
+  "I",
+  "N",
+  "D",
+  "UP",
+  "B",
+  "A",
+  "C4",
+  "DTZ",
+  "T10",
+  "DJ",
+  "LOG",
+  "G",
+  "PIE",
+  "PT",
+  "RSE",
+  "RET",
+  "SIM",
+  "TID",
+  "TC",
+  "ARG",
+  "PTH",
+  "ERA",
+  "PGH",
+  "PL",
+  "PERF",
+  "RUF",
+  "S",
+]
+ignore = [
+  "A003",   # Domain/record identity fields legitimately use the name `id`.
+  "RUF012", # Framework configuration commonly uses mutable class attributes.
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**/*.py" = ["D", "S101", "S105", "S106", "PLR2004"]
+"src/strata_cms/config/settings/*.py" = ["F403", "F405", "S105", "S106"]
+"src/strata_cms/infrastructure/persistence/django/models.py" = ["DJ001"]
+"src/strata_cms/infrastructure/plugins/apps.py" = ["PLC0415"]
+"manage.py" = ["PLC0415"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["strata_cms"]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.ruff.lint.flake8-tidy-imports]
+ban-relative-imports = "parents"
+
+[tool.ruff.lint.pylint]
+max-args = 7
+max-branches = 12
+max-statements = 50
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+line-ending = "auto"
+skip-magic-trailing-comma = false
+docstring-code-format = true
+
+[tool.mypy]
+python_version = "3.12"
+plugins = ["mypy_django_plugin.main", "mypy_drf_plugin.main"]
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+disallow_any_generics = true
+no_implicit_optional = true
+no_implicit_reexport = true
+warn_return_any = true
+warn_unused_configs = true
+warn_unused_ignores = true
+warn_redundant_casts = true
+warn_unreachable = true
+strict_equality = true
+extra_checks = true
+show_error_codes = true
+pretty = true
+exclude = [".*/migrations/.*"]
+
+[tool.django-stubs]
+django_settings_module = "strata_cms.config.settings.test"
+strict_settings = true
+strict_model_abstract_attrs = true
+
+[[tool.mypy.overrides]]
+module = ["environ", "environ.*", "unfold", "unfold.*"]
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "strata_cms.config.settings.test"
+pythonpath = ["src"]
+addopts = [
+  "--strict-markers",
+  "--strict-config",
+  "--cov=strata_cms",
+  "--cov-branch",
+  "--cov-report=term-missing:skip-covered",
+  "--cov-report=xml",
+  "--cov-fail-under=85",
+]
+testpaths = ["tests", "src"]
+
+[tool.coverage.run]
+branch = true
+source = ["strata_cms"]
+omit = [
+  "*/migrations/*",
+  "*/config/settings/*",
+  "*/config/urls.py",
+  "*/wsgi.py",
+  "*/asgi.py",
+]
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = true
+fail_under = 85
+precision = 2
+exclude_lines = [
+  "pragma: no cover",
+  "if TYPE_CHECKING:",
+  "if __name__ == .__main__.:",
+]
+
+[tool.importlinter]
+root_package = "strata_cms"
+include_external_packages = true
+
+[[tool.importlinter.contracts]]
+name = "Domain is framework and infrastructure independent"
+type = "forbidden"
+source_modules = ["strata_cms.domain"]
+forbidden_modules = [
+  "strata_cms.application",
+  "strata_cms.plugin_api",
+  "strata_cms.infrastructure",
+  "strata_cms.api",
+  "strata_cms.admin",
+  "strata_cms.config",
+  "django",
+  "rest_framework",
+]
+broken_contract_guidance = "Move framework/persistence code behind a domain/application-facing port and keep domain objects plain Python."
+
+[[tool.importlinter.contracts]]
+name = "Application does not depend on concrete infrastructure or presentation"
+type = "forbidden"
+source_modules = ["strata_cms.application"]
+forbidden_modules = [
+  "strata_cms.plugin_api",
+  "strata_cms.infrastructure",
+  "strata_cms.api",
+  "strata_cms.admin",
+  "strata_cms.config",
+  "django",
+  "rest_framework",
+]
+broken_contract_guidance = "Define or use an application port; concrete Django/provider adapters belong in strata_cms.infrastructure."
+
+[[tool.importlinter.contracts]]
+name = "Django persistence adapter is protected"
+type = "protected"
+protected_modules = ["strata_cms.infrastructure.persistence.django"]
+allowed_importers = [
+  "strata_cms.infrastructure",
+  "strata_cms.admin",
+  "strata_cms.config",
+]
+broken_contract_guidance = "Use repositories/query services/application use cases instead of importing Django persistence records directly."
+
+[[tool.importlinter.contracts]]
+name = "Public plugin core stays framework neutral"
+type = "forbidden"
+source_modules = [
+  "strata_cms.plugin_api.blocks",
+  "strata_cms.plugin_api.definitions",
+  "strata_cms.plugin_api.editor",
+  "strata_cms.plugin_api.errors",
+  "strata_cms.plugin_api.keys",
+  "strata_cms.plugin_api.migrations",
+  "strata_cms.plugin_api.registry",
+  "strata_cms.plugin_api.schema",
+]
+forbidden_modules = [
+  "strata_cms.application",
+  "strata_cms.infrastructure",
+  "strata_cms.api",
+  "strata_cms.admin",
+  "strata_cms.config",
+  "django",
+  "rest_framework",
+]
+broken_contract_guidance = "Keep the public plugin core pure Python; Django-specific AppConfig integration belongs in strata_cms.plugin_api.django and concrete loading belongs in infrastructure."

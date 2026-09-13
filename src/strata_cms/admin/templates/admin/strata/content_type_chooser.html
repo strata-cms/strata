@@ -1,0 +1,21 @@
+{% extends "admin/base_site.html" %}
+
+{% block content %}
+  <div class="cms-type-chooser">
+    {% if error %}<p class="errornote">{{ error }}</p>{% endif %}
+    {% if content_types %}
+      <ul>
+        {% for item in content_types %}
+          <li>
+            <a href="?type={{ item.key|urlencode }}">
+              <strong>{{ item.label }}</strong>
+              {% if item.description %}<span>{{ item.description }}</span>{% endif %}
+            </a>
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p>No installed content type exposes editor metadata.</p>
+    {% endif %}
+  </div>
+{% endblock %}
