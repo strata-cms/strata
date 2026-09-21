@@ -20,3 +20,9 @@ openapi.yaml
 media
 staticfiles
 docs
+AGENTS.md
+CLAUDE.md
+CONTRIBUTING.md
+SECURITY.md
+tests
+.import_linter_cache
