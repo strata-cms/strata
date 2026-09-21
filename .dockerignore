@@ -19,5 +19,4 @@ build
 openapi.yaml
 media
 staticfiles
-README.md
 docs
