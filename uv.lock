@@ -364,11 +364,11 @@ wheels = [
 
 [[package]]
 name = "django-environ"
-version = "0.12.1"
+version = "0.14.0"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/d4/3c/b2de27581c28929e3b33c5797e3d075c93541b4a8499ddc84dfd659d550f/django_environ-0.12.1.tar.gz", hash = "sha256:22859c6e905ab7637fa3348d1787543bb4492f38d761104a3ce0519b7b752845", size = 58257, upload-time = "2026-02-14T01:19:50.733Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/57/e1/4c4ddcf6e90f023e89edb1d92f9a7fffce61ad4b691df497f2f5c0be6e26/django_environ-0.14.0.tar.gz", hash = "sha256:b6c48d93b9d2ff8a3ea14099e90c35aa4f101c1b4d5f262dfee0d27b06742ed7", size = 60417, upload-time = "2026-06-18T22:49:55.847Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/3a/1c/a6c55b856cb2c5824ee2fe5e27d6f54909ac7c228672b359ecbca99a6b41/django_environ-0.12.1-py2.py3-none-any.whl", hash = "sha256:064ba2d5082f833e6d7fe4def4928bde1eedc0248a417575da7db147aeec1c20", size = 20035, upload-time = "2026-02-14T01:19:48.683Z" },
+    { url = "https://files.pythonhosted.org/packages/1a/fe/67b423fc30f16d10259e901320fbc121746bf168aaaad9043e6ebb0110c1/django_environ-0.14.0-py3-none-any.whl", hash = "sha256:8dbe8a57f0a540ab8abd6f54f230de5e99e3a2c9d797cb9caecb037bca3d47d8", size = 20934, upload-time = "2026-06-18T22:49:54.355Z" },
 ]
 
 [[package]]
@@ -406,14 +406,14 @@ wheels = [
 
 [[package]]
 name = "django-unfold"
-version = "0.105.0"
+version = "0.107.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "django" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/1b/b6/72c412b2a296a3d7a283d5cff80a2b2b539dd621434da0d0e67f9df4add3/django_unfold-0.105.0.tar.gz", hash = "sha256:0051c43185bc54807d522fad50663a5b1332ae0e54ebe490b1f6c879cc6962db", size = 1112124, upload-time = "2026-09-04T08:51:42.019Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/89/d1/163f8cfc4b3f4d839e043cfaddff5313f5acbcdc6960cdb75089aab61be2/django_unfold-0.107.0.tar.gz", hash = "sha256:c7c3f83e2dec55dd920b6770dce43d2b517671a5824f3a2352996c62baa9400f", size = 1113222, upload-time = "2026-09-17T08:42:58.595Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/08/c2/72eccd0adacdca28a6dbd54b7092c8cd29b71ef881fc293e49ee57276fd9/django_unfold-0.105.0-py3-none-any.whl", hash = "sha256:b72880caa376bdc893c2e256dd990812c0301f269e0b977a6b9b4342c6606477", size = 1237302, upload-time = "2026-09-04T08:51:40.558Z" },
+    { url = "https://files.pythonhosted.org/packages/c9/89/450b154e92df9437a42f1a485fe15b983326b4db91cc6e1ea16a77c67bc9/django_unfold-0.107.0-py3-none-any.whl", hash = "sha256:22b9d86a8336d507eac83c5fafd9e1cb94c5374da9877ca8620513e17d6da5b5", size = 1239122, upload-time = "2026-09-17T08:42:56.936Z" },
 ]
 
 [[package]]
@@ -547,14 +547,11 @@ wheels = [
 
 [[package]]
 name = "gunicorn"
-version = "23.0.0"
+version = "26.2.0"
 source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "packaging" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/34/72/9614c465dc206155d93eff0ca20d42e1e35afc533971379482de953521a4/gunicorn-23.0.0.tar.gz", hash = "sha256:f014447a0101dc57e294f6c18ca6b40227a4c90e9bdb586042628030cba004ec", size = 375031, upload-time = "2024-08-10T20:25:27.378Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/d9/8a/e4ef6ee11701b6cd64702848415ffb69eeff85cb388a3c6c7fe86f22f3f8/gunicorn-26.2.0.tar.gz", hash = "sha256:62b864895d9ebff0b2f9867ba04fe811c93121596540830c9c916d0769668447", size = 787921, upload-time = "2026-08-24T15:05:59.3Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/cb/7d/6dac2a6e1eba33ee43f318edbed4ff29151a49b5d37f080aad1e6469bca4/gunicorn-23.0.0-py3-none-any.whl", hash = "sha256:ec400d38950de4dfd418cff8328b2c8faed0edb0d517d3394e457c317908ca4d", size = 85029, upload-time = "2024-08-10T20:25:24.996Z" },
+    { url = "https://files.pythonhosted.org/packages/fe/85/7522a52e5e2f42faf1a129113ab63e548c42e103e9af395b7bfe65e403e2/gunicorn-26.2.0-py3-none-any.whl", hash = "sha256:bd249d0b3f7972f7432f0a6b6ff3b3ee2d129f70cd1ff6c09a9dd9e29a2b88e3", size = 228389, upload-time = "2026-08-24T15:05:57.67Z" },
 ]
 
 [[package]]
@@ -1425,11 +1422,11 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "django", specifier = ">=5.2.17,<5.3" },
-    { name = "django-environ", specifier = ">=0.12,<0.13" },
-    { name = "django-unfold", specifier = ">=0.105.0,<0.106" },
+    { name = "django-environ", specifier = ">=0.12,<0.15" },
+    { name = "django-unfold", specifier = ">=0.105.0,<0.108" },
     { name = "djangorestframework", specifier = ">=3.18,<3.19" },
     { name = "drf-spectacular", specifier = ">=0.30,<0.31" },
-    { name = "gunicorn", specifier = ">=23,<24" },
+    { name = "gunicorn", specifier = ">=23,<27" },
     { name = "packaging", specifier = ">=25,<27" },
     { name = "psycopg", extras = ["binary"], specifier = ">=3.2,<4" },
     { name = "whitenoise", specifier = ">=6.9,<7" },
