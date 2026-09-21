@@ -15,6 +15,7 @@ RUN uv sync --locked --no-dev --no-install-project
 
 COPY src ./src
 COPY manage.py ./manage.py
+COPY README.md ./README.md
 RUN uv sync --locked --no-dev
 
 ENV PATH="/app/.venv/bin:$PATH" \
@@ -31,6 +32,10 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     DJANGO_SETTINGS_MODULE=strata_cms.config.settings.production
 
 RUN addgroup --system strata && adduser --system --ingroup strata --home /app strata
+
+# The app runs from /app/.venv; system pip is unused at runtime and only adds
+# vendored dependencies to the image attack surface.
+RUN /usr/local/bin/python -m pip uninstall -y pip
 WORKDIR /app
 
 COPY --from=builder --chown=strata:strata /app/.venv /app/.venv

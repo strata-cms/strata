@@ -19,5 +19,10 @@ build
 openapi.yaml
 media
 staticfiles
-README.md
 docs
+AGENTS.md
+CLAUDE.md
+CONTRIBUTING.md
+SECURITY.md
+tests
+.import_linter_cache
