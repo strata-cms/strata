@@ -15,6 +15,7 @@ RUN uv sync --locked --no-dev --no-install-project
 
 COPY src ./src
 COPY manage.py ./manage.py
+COPY README.md ./README.md
 RUN uv sync --locked --no-dev
 
 ENV PATH="/app/.venv/bin:$PATH" \
