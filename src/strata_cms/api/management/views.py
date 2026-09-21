@@ -10,6 +10,7 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from strata_cms.api.errors import public_error_detail
 from strata_cms.api.management.permissions import HasStrataManagementPermission
 from strata_cms.api.management.serializers import (
     AttachRouteSerializer,
@@ -117,7 +118,7 @@ class ContentTypeDetailView(ManagementAPIView):
             key = ContentTypeKey(type_key)
         except InvalidContentTypeKeyError as exc:
             return Response(
-                {"detail": str(exc)},
+                {"detail": public_error_detail(exc)},
                 status=status.HTTP_400_BAD_REQUEST,
             )
         editor = get_editor_catalog().get_content_type(key)
@@ -636,7 +637,7 @@ def _application_error(error: Exception) -> Response:
     else:
         code = status.HTTP_400_BAD_REQUEST
 
-    payload: dict[str, object] = {"detail": str(error)}
+    payload: dict[str, object] = {"detail": public_error_detail(error)}
     if isinstance(error, InvalidContentDataError):
         payload["problems"] = [asdict(problem) for problem in error.problems]
     return Response(payload, status=code)

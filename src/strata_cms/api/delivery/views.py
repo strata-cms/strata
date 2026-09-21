@@ -14,6 +14,7 @@ from strata_cms.api.delivery.serializers import (
     ContentListQuerySerializer,
     ContentSearchQuerySerializer,
 )
+from strata_cms.api.errors import public_error_detail
 from strata_cms.application.content.delivery import (
     PublishedContent,
     get_published_content,
@@ -91,7 +92,7 @@ class ContentDeliveryListView(DeliveryAPIView):
                 type_key = ContentTypeKey(str(type_value))
             except InvalidContentTypeKeyError as exc:
                 return Response(
-                    {"detail": str(exc)},
+                    {"detail": public_error_detail(exc)},
                     status=status.HTTP_400_BAD_REQUEST,
                 )
 
@@ -172,7 +173,7 @@ class ContentSearchView(DeliveryAPIView):
                 filters["type"] = str(ContentTypeKey(str(type_value)))
             except InvalidContentTypeKeyError as exc:
                 return Response(
-                    {"detail": str(exc)},
+                    {"detail": public_error_detail(exc)},
                     status=status.HTTP_400_BAD_REQUEST,
                 )
 
